@@ -109,13 +109,16 @@ public class Morpher {
 		try {
 			System.out.println("Saving to: " + path + "\\output.gif, frames: " + frames.size());
 			ImageOutputStream output = new FileImageOutputStream(new File(path + "\\output.gif"));
-			GifSequenceWriter writer = new GifSequenceWriter(output, first.getType(), (1/30) * 1000, false);
+			//GifSequenceWriter writer = new GifSequenceWriter(output, first.getType(), (1/30) * 1000, false);
+			AnimatedGifEncoder encoder = new AnimatedGifEncoder();
 			int wrote = 0;
 			for(BufferedImage b : frames) {
-				writer.writeToSequence(b);
+				//writer.writeToSequence(b);
+				encoder.addFrame(b);
 				wrote++;
 			}
-			writer.close();
+			//writer.close();
+			encoder.finish();
 			output.close();
 			System.out.println("Wrote " + wrote + " frames. done");
 		} catch (Exception e) {

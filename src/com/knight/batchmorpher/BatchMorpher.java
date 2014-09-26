@@ -11,12 +11,12 @@ public class BatchMorpher {
 
 	public static void main(String args[]) {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		String path = "";//"C:\\Users\\New User\\Documents\\School\\Sophomore\\Java\\pictures"; 
+		String path = "Z:\\java\\pictures"; //"";
 		int frames = 30;
 		int pause = 30;
 		try {
 			System.out.println("Enter the path of the folder (of folders...)");
-			path = br.readLine();
+			//path = br.readLine();
 			System.out.println("Enter number of frames per transition (30/second)");
 			frames = Integer.valueOf(br.readLine());
 			System.out.println("Enter number of frames to pause on each picture (30/second)");
