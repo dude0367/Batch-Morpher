@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-public class BatcherMorpher {
+public class BatchMorpher {
 
 	public static ArrayList<Morpher> morphers;
 
