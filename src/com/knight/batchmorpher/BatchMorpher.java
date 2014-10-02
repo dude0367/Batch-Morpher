@@ -14,9 +14,18 @@ public class BatchMorpher {
 		String path = "Z:\\java\\pictures"; //"";
 		int frames = 30;
 		int pause = 30;
+		int width = 0; //128
+		int height = 0; //160
 		try {
 			System.out.println("Enter the path of the folder (of folders...)");
 			//path = br.readLine();
+			System.out.println("Enter your desired width (leave blank for default)");
+			String in = "";
+			in = br.readLine();
+			if(!in.equals("")) width = Integer.valueOf(in);
+			System.out.println("Enter your desired height (leave blank for default)");
+			in = br.readLine();
+			if(!in.equals("")) height = Integer.valueOf(in);
 			System.out.println("Enter number of frames per transition (30/second)");
 			frames = Integer.valueOf(br.readLine());
 			System.out.println("Enter number of frames to pause on each picture (30/second)");
@@ -28,7 +37,11 @@ public class BatchMorpher {
 		//System.out.println(folderOfFolders.listFiles()[0].getAbsolutePath());
 		morphers = new ArrayList<Morpher>();
 		for(File f : folderOfFolders.listFiles()) {
-			morphers.add(new Morpher(f.getAbsolutePath(), frames, pause));
+			if(width != 0 && height != 0) {
+				morphers.add(new Morpher(f.getAbsolutePath(), frames, pause, width, height));
+			} else {
+				morphers.add(new Morpher(f.getAbsolutePath(), frames, pause));
+			}
 		}
 		System.out.println("Path set to: " + path + ", there are " + morphers.size() + " folders. Press enter to continue...");
 		try {

@@ -19,17 +19,33 @@ public class Morpher {
 	private String path;
 
 	public ArrayList<BufferedImage> frames = new ArrayList<BufferedImage>();
+	BufferedImage pictures[]; 
 	BufferedImage first;
 	BufferedImage second;
 	BufferedImage third;
 	int frameCount = 0;
 	int framesPerTransition = 30;
 	int pause = 30;
+	int targWidth = 0;
+	int targHeight = 0;
 
 	public Morpher(String path, int frames, int pause) {
 		this.path = path;
 		this.framesPerTransition = frames;
 		this.pause = pause;
+	}
+
+	public Morpher(String path, int frames, int pause, int width, int height) {
+		this(path, frames, pause);
+		targWidth = width;
+		targHeight = height;
+	}
+	
+	public void morph1() {
+		File f = new File(path);
+		frameCount = f.listFiles().length * framesPerTransition;
+		int width = 0;
+		int height = 0;
 	}
 
 	public void morph() {
@@ -39,23 +55,18 @@ public class Morpher {
 		int height = 0;
 		try {
 			first = ImageIO.read(f.listFiles()[0]);
-			width = first.getWidth();
-			height = first.getHeight();
 			second = ImageIO.read(f.listFiles()[1]);
-			if(width < second.getWidth()) {
-				width = second.getWidth();
-				height = second.getHeight();
-				System.out.print("Resizing image to " + width + "x" + height);
-				BufferedImage after = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-				AffineTransform at = new AffineTransform();
-				at.scale(((double)width) / ((double)first.getWidth()), ((double)height) / ((double)first.getHeight()));
-				//System.out.print("Scale ratios: " + (width / first.getWidth()) + ", " + height / first.getHeight());
-				AffineTransformOp scaleOp = 
-						   new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-						first = scaleOp.filter(first, after);
-				System.out.println(", final size: " + first.getWidth() + "x" + first.getHeight());
-			}
 			third = ImageIO.read(f.listFiles()[2]);
+			if(targWidth != 0) {
+				width = targWidth;
+				height = targHeight;
+			} else {
+				width = first.getWidth();
+				height = first.getHeight();
+			}
+			first = resize(first, width, height);
+			second = resize(second, width, height);
+			third = resize(third, width, height);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -83,6 +94,7 @@ public class Morpher {
 			last = bi;
 		}
 		for(int i = 1; i < pause; i++) frames.add(second);
+		last = second;
 		changedPixels = 0;
 		switched = new boolean[width][height];
 		while(changedPixels < totalPixels) {
@@ -108,9 +120,11 @@ public class Morpher {
 	public void save() {
 		try {
 			System.out.println("Saving to: " + path + "\\output.gif, frames: " + frames.size());
-			ImageOutputStream output = new FileImageOutputStream(new File(path + "\\output.gif"));
+			//ImageOutputStream output = new FileImageOutputStream(new File(path + "\\output.gif"));
 			//GifSequenceWriter writer = new GifSequenceWriter(output, first.getType(), (1/30) * 1000, false);
 			AnimatedGifEncoder encoder = new AnimatedGifEncoder();
+			encoder.start(path + "\\output.gif");
+			encoder.setDelay(framesPerTransition);
 			int wrote = 0;
 			for(BufferedImage b : frames) {
 				//writer.writeToSequence(b);
@@ -119,7 +133,7 @@ public class Morpher {
 			}
 			//writer.close();
 			encoder.finish();
-			output.close();
+			//output.close();
 			System.out.println("Wrote " + wrote + " frames. done");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -132,6 +146,22 @@ public class Morpher {
 		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
 		WritableRaster raster = bi.copyData(null);
 		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+	}
+
+	BufferedImage resize(BufferedImage img, int width, int height) {
+		/*BufferedImage out = null;
+		width = second.getWidth();
+		height = second.getHeight();*/
+		System.out.print("Resizing image to " + width + "x" + height);
+		BufferedImage out = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		AffineTransform at = new AffineTransform();
+		at.scale(((double)width) / ((double)img.getWidth()), ((double)height) / ((double)img.getHeight()));
+		System.out.print("Scale ratios: " + (width / first.getWidth()) + ", " + height / first.getHeight());
+		AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+		//first = scaleOp.filter(first, after);
+		out = scaleOp.filter(img, out);
+		System.out.println(", final size: " + first.getWidth() + "x" + first.getHeight());
+		return out;
 	}
 
 }
