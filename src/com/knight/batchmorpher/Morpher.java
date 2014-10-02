@@ -19,7 +19,7 @@ public class Morpher {
 	private String path;
 
 	public ArrayList<BufferedImage> frames = new ArrayList<BufferedImage>();
-	BufferedImage pictures[]; 
+	ArrayList<BufferedImage> pictures = new ArrayList<BufferedImage>(); 
 	BufferedImage first;
 	BufferedImage second;
 	BufferedImage third;
@@ -28,11 +28,23 @@ public class Morpher {
 	int pause = 30;
 	int targWidth = 0;
 	int targHeight = 0;
+	String name;
 
 	public Morpher(String path, int frames, int pause) {
 		this.path = path;
 		this.framesPerTransition = frames;
 		this.pause = pause;
+		File folder = new File(path);
+		name = folder.getName();
+		for(File f : folder.listFiles()) {
+			if(!f.getName().contains(".gif")) {
+				try {
+					pictures.add(ImageIO.read(f));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	public Morpher(String path, int frames, int pause, int width, int height) {
@@ -41,14 +53,54 @@ public class Morpher {
 		targHeight = height;
 	}
 	
-	public void morph1() {
+	public void morph() {
 		File f = new File(path);
 		frameCount = f.listFiles().length * framesPerTransition;
 		int width = 0;
 		int height = 0;
+		if(targWidth != 0) {
+			width = targWidth;
+			height = targHeight;
+		} else {
+			width = pictures.get(0).getWidth();
+			height = pictures.get(0).getHeight();
+		}
+		BufferedImage last = null;//pictures.get(0);
+		for(BufferedImage next : pictures) {
+			if(next == null) continue;
+			if(next.getWidth() != width || next.getHeight() != height) {
+				next = resize(next, width, height);
+			}
+			if(last == null) {
+				last = next;
+				continue;
+			}
+			for(int i = 1; i < pause; i++) frames.add(last);
+			boolean[][] switched = new boolean[width][height];
+			int totalPixels = width * height;
+			int changedPixels = 0;
+			Random rand = new Random();
+			int pixelsToChangePerFrame = totalPixels / framesPerTransition;
+			while(changedPixels < totalPixels) {
+				BufferedImage bi = copy(last);//new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+				for(int tot = 0; tot < pixelsToChangePerFrame; tot++) {
+					int x = 0;
+					int y = 0;
+					while(switched[x][y] && changedPixels < totalPixels) {
+						x = rand.nextInt(width);
+						y = rand.nextInt(height);
+					}
+					switched[x][y] = true;
+					bi.setRGB(x, y, next.getRGB(x, y));
+					changedPixels++;
+				}
+				frames.add(bi);
+				last = bi;
+			}
+		}
 	}
 
-	public void morph() {
+	public void morph1() {
 		File f = new File(path);
 		frameCount = f.listFiles().length * framesPerTransition;
 		int width = 0;
@@ -152,15 +204,15 @@ public class Morpher {
 		/*BufferedImage out = null;
 		width = second.getWidth();
 		height = second.getHeight();*/
-		System.out.print("Resizing image to " + width + "x" + height);
+		System.out.print("Resizing image to " + width + "x" + height + "\n");
 		BufferedImage out = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		AffineTransform at = new AffineTransform();
 		at.scale(((double)width) / ((double)img.getWidth()), ((double)height) / ((double)img.getHeight()));
-		System.out.print("Scale ratios: " + (width / first.getWidth()) + ", " + height / first.getHeight());
+		//System.out.print("Scale ratios: " + (width / first.getWidth()) + ", " + height / first.getHeight());
 		AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
 		//first = scaleOp.filter(first, after);
 		out = scaleOp.filter(img, out);
-		System.out.println(", final size: " + first.getWidth() + "x" + first.getHeight());
+		//System.out.println(", final size: " + first.getWidth() + "x" + first.getHeight());
 		return out;
 	}
 
