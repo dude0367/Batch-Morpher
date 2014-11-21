@@ -14,11 +14,11 @@ public class BatchMorpher {
 		String path = "Z:\\java\\pictures"; //"";
 		int frames = 30;
 		int pause = 30;
-		int width = 0; //128
-		int height = 0; //160
+		int width = 640; //128
+		int height = 800; //160
 		try {
 			System.out.println("Enter the path of the folder (of folders...)");
-			//path = br.readLine();
+			path = "Z:\\Aurasma project\\2015 Output";//br.readLine();
 			System.out.println("Enter your desired width (leave blank for default)");
 			String in = "";
 			in = br.readLine();
@@ -46,8 +46,7 @@ public class BatchMorpher {
 		System.out.println("Path set to: " + path + ", there are " + morphers.size() + " folders. Press enter to continue...");
 		try {
 			br.readLine();
-		} catch (Exception e) {
-		}
+		} catch (Exception e) {}
 		for(Morpher m : morphers) {
 			m.morph();
 			m.save();
