@@ -8,6 +8,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -34,7 +35,37 @@ public class Morpher {
 		this.pause = pause;
 		File folder = new File(path);
 		name = folder.getName();
-		for(File f : folder.listFiles()) {
+		File[] files = folder.listFiles();
+		int firstYear = 999;
+		for(File f : files) {
+			if(f.getName().split(" ").length > 2 && Integer.parseInt(f.getName().split(" ")[f.getName().split(" ").length - 1].split("\\.")[0]) < firstYear) {
+				firstYear = Integer.parseInt(f.getName().split(" ")[f.getName().split(" ").length - 1].split("\\.")[0]);
+			}
+		}
+		//Arrays.sort(files);
+		while((files.length > 0 && files[0].getName().split(" ").length < 3) || (files.length > 0 && Integer.parseInt(files[0].getName().split(" ")[files[0].getName().split(" ").length - 1].split("\\.")[0]) != firstYear)) {
+			for(int i = 0; i < files.length; i++) {
+				String[] split = files[i].getName().split(" ");
+				if(split.length < 3) {
+					File temp = files[files.length-1];
+					files[files.length-1] = files[i];
+					files[i] = temp;
+					continue;
+				}
+				int year = Integer.parseInt(split[split.length - 1].split("\\.")[0]);
+				if(i > 0 && files[i-1].getName().split(" ").length > 2) {
+					String[] split2 = files[i-1].getName().split(" ");
+					int lastYear = Integer.parseInt(split2[split2.length - 1].split("\\.")[0]);
+					if(year < lastYear) {
+						File temp = files[i-1];
+						files[i-1] = files[i];
+						files[i] = temp;
+					}
+				}
+			}
+		}
+		//System.out.println("asdf");
+		for(File f : files) {
 			if(!f.getName().contains(".gif")) {
 				try {
 					pictures.add(ImageIO.read(f));
@@ -43,6 +74,7 @@ public class Morpher {
 				}
 			}
 		}
+
 	}
 
 	public Morpher(String path, int frames, int pause, int width, int height) {
@@ -50,7 +82,7 @@ public class Morpher {
 		targWidth = width;
 		targHeight = height;
 	}
-	
+
 	public void morph() {
 		File f = new File(path);
 		frameCount = f.listFiles().length * framesPerTransition;
